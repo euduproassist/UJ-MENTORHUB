@@ -58,10 +58,7 @@
   const fmtDate = (d) => (d ? new Date(d).toLocaleString() : "—");
 
   const detectUni = () => {
-    const p = location.pathname.toLowerCase();
-    if (p.includes("uj")) return "uj";
-    if (p.includes("wits")) return "wits";
-    return "up";
+    return "uj";
   };
 
   const isAdmin = () => {
@@ -236,8 +233,6 @@
       <style>
         :root {
           --uj-main:#f36f21;
-          --up-main:#004b8d;
-          --wits-main:#002147;
           --accent:#e8b500;
         }
         .counsellor-dashboard {
@@ -978,3 +973,4 @@
   ------------------------------------------------------------ */
   document.addEventListener("DOMContentLoaded", init);
 })();
+
