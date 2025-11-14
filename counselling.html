@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UJ Counsellor Portal</title>
+  <link rel="icon" type="image/png" href="assets/logos/uj.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="portal-page uj-counsellor">
+
+  <!-- top-left always-visible logo -->
+  <img src="assets/logos/uj.png" class="portal-logo" alt="UJ Logo" />
+
+  <div class="portal-container" aria-live="polite">
+    <!-- the enhanced JS will render the full dashboard here -->
+  </div>
+
+  <footer>© 2025 University of Johannesburg | Counselling Assistance Portal | Powered by UniHelp AI</footer>
+
+  <script>
+    // quick auth check - only the login flow sets auth
+    if (!localStorage.getItem("uj_auth") || localStorage.getItem("uj_auth") !== "true") {
+      // if not logged-in, redirect to login
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <script src="counsellor-app-pro.js" defer></script>
+</body>
+</html>
