@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UJ Counsellor Login</title>
+  <link rel="icon" type="image/png" href="assets/logos/uj.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="login-page" style="background-image: url('assets/banners/uj-bg.png');">
+
+  <img src="assets/logos/uj.png" class="top-left-logo" alt="UJ Logo" />
+
+  <div class="login-box" role="main" aria-labelledby="loginTitle">
+    <h2 id="loginTitle">UJ Counsellor Login</h2>
+
+    <input id="username" type="text" placeholder="Username" autocomplete="username" />
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+
+    <div style="margin-top:12px;">
+      <button id="loginBtn">Login</button>
+    </div>
+
+    <a class="forgot" href="#" onclick="alert('Contact IT support to reset your password.')">Forgot Password?</a>
+
+    <div class="footer" style="margin-top:18px;">
+      © 2025 University of Johannesburg<br/>
+      <div class="footer-links">
+        <a href="#" onclick="alert('Terms placeholder')">Terms</a> •
+        <a href="#" onclick="alert('Privacy placeholder')">Privacy</a> •
+        <a href="#" onclick="alert('Help placeholder')">Help</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>
