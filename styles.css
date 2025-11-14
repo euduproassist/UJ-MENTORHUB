@@ -87,80 +87,60 @@ body, html {
 .footer-links a { color: black; text-decoration: none; margin: 0 6px; }
 .footer-links a:hover { text-decoration: underline; }
 
-/* ---------- PORTAL (UJ theme) ---------- */
+/* ==============================
+   PORTAL STYLES
+   ============================== */
 .portal-page {
-  position: relative;
-  min-height: 100vh;
+  position: relative;        /* 👈 This line is the fix */
+  height: 100vh;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg,#ff7a00 0%,#000 100%);
+  color: white;
+  text-align: center;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
-.portal-logo {
-  position: fixed;
-  top: 15px;
-  left: 15px;
-  width: 130px;
-  z-index: 9999;
-}
 
 .portal-container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 48px auto;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(10px);
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
-  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 50px;
+  border-radius: 20px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
 }
 
-/* banner inside portal */
-.portal-banner {
-  width: 100%;
-  height: 180px;
-  border-radius: 14px;
-  background-image: url("assets/banners/uj-bg.png");
+/* --- WITS THEMES (blue, grey, gold) --- */
+.wits-student {
+  background: linear-gradient(135deg, #002366, #708090, #FFD700);
+}
+.wits-tutor {
+  background: linear-gradient(135deg, #1E3A8A, #6B7280, #FBBF24);
+}
+.wits-counsellor {
+  background: linear-gradient(135deg, #0A2647, #7C8A98, #FFD700);
+}
+.wits-admin {
+  background: linear-gradient(135deg, #001F3F, #808080, #DAA520);
+}
+/* --- WITS LOGO POSITION (separate from others) --- */
+.wits-student .portal-logo,
+.wits-tutor .portal-logo,
+.wits-counsellor .portal-logo,
+.wits-admin .portal-logo {
+  position: fixed;       /* stays at the top while scrolling */
+  top: 15px;             /* from top edge */
+  left: 15px;            /* from left edge */
+  width: 130px;          /* size of logo */
+  height: auto;
+  z-index: 9999;         /* ensures it appears above everything */
+  display: block;
+}
+
+
+/* --- UJ THEMES (light orange fading to white) --- */
+.uj-student, .uj-tutor, .uj-counsellor, .uj-admin {
+  background: linear-gradient(to bottom right, #FFDAB9, #FFFFFF); /* light orange to white */
+  background-repeat: no-repeat;
   background-size: cover;
-  background-position: center;
-  margin-bottom: 18px;
-  box-shadow: inset 0 0 0 1000px rgba(0,0,0,0.15);
-}
-
-/* basic typography */
-h1 { color: #ff7a00; font-size: 1.6rem; margin-bottom: 8px; }
-p { color: #222; margin-bottom: 14px; }
-
-/* Full dashboard layout (JS injects content) */
-.counsellor-dashboard { width:100%; display:flex; border-radius:16px; overflow:hidden; }
-.counsellor-dashboard .side { width:270px; background:linear-gradient(180deg,#f36f21,#222); color:#fff; display:flex; flex-direction:column; justify-content:space-between; }
-.counsellor-dashboard .side h2 { padding:20px; text-align:center; font-size:1.05rem; border-bottom:1px solid rgba(255,255,255,.12); }
-.profile-photo { width:90px; height:90px; border-radius:50%; object-fit:cover; margin:12px auto; background:#fff; }
-.counsellor-dashboard .side button { background:none; border:none; color:#fff; padding:12px 18px; text-align:left; cursor:pointer; width:100%; font-size:15px; border-bottom:1px solid rgba(255,255,255,.06); }
-.counsellor-dashboard .side button.active, .counsellor-dashboard .side button:hover { background:rgba(255,255,255,0.06); }
-
-.content { flex:1; padding:22px 28px; overflow-y:auto; max-height:calc(100vh - 120px); }
-.card { background:#fff; border-radius:12px; box-shadow:0 3px 12px rgba(0,0,0,.06); padding:18px; margin-bottom:18px; transition:transform .18s; }
-.card:hover { transform:translateY(-2px); }
-
-.topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-.avail-indicator { width:14px;height:14px;border-radius:50%;margin-right:8px;display:inline-block;background:#ccc; box-shadow:0 0 8px transparent; }
-
-input,textarea,select { width:100%; padding:8px 10px; margin:6px 0 12px 0; border-radius:6px; border:1px solid #ccc; font-size:14px; }
-button.action { padding:8px 12px;border-radius:6px;border:none;background:#f36f21;color:#fff;cursor:pointer; }
-.small { font-size:13px; color:#666; }
-.toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#222; color:#fff; padding:10px 20px; border-radius:6px; opacity:.98; z-index:9999; transition:opacity .3s; }
-.calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
-.cal-cell { border:1px dashed #ddd; padding:10px; border-radius:8px; background:#fafafa; }
-.link-pill { display:inline-block; padding:6px 8px; border-radius:6px; border:1px solid #eee; margin:4px 4px 0 0; font-size:13px; }
-.muted { color:#666; font-size:13px; }
-
-/* responsive */
-@media (max-width:900px) {
-  .counsellor-dashboard { flex-direction:column; }
-  .counsellor-dashboard .side { width:100%; display:flex; flex-direction:row; overflow:auto; gap:8px; }
-  .content { max-height:none; padding:12px; }
-  .portal-container { margin: 20px; padding:16px; }
+  background-attachment: fixed;
 }
