@@ -1,25 +1,186 @@
-/* Reset */
-body, html {
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  box-sizing: border-box;
-}
+/* Reset */  
 
-/* ---------- LOGIN PAGE ---------- */
-.login-page {
-  height: 100vh;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-}
+body, html {  
+
+margin: 0;  
+
+padding: 0;  
+
+font-family: Arial, sans-serif;  
+
+}  
+
+/* Choose Page Styling */  
+
+.choose-page {  
+
+display: flex;  
+
+justify-content: center;  
+
+align-items: center;  
+
+height: 100vh;  
+
+background: #f7f7f7;  
+
+}  
+
+.container {  
+
+text-align: center;  
+
+}  
+
+.university-buttons button {  
+
+display: flex;  
+
+align-items: center;  
+
+justify-content: center;  
+
+gap: 10px;  
+
+background: white;  
+
+border: 2px solid #ddd;  
+
+border-radius: 8px;  
+
+padding: 15px 25px;  
+
+margin: 10px;  
+
+cursor: pointer;  
+
+transition: 0.3s;  
+
+font-size: 16px;  
+
+}  
+
+.university-buttons button img {  
+
+width: 40px;  
+
+height: 40px;  
+
+}  
+
+.university-buttons button:hover {  
+
+background: #e0f0ff;  
+
+}  
+
+/* Login Page Styles */  
+
+.login-page {  
+
+height: 100vh;  
+
+background-size: cover;  
+
+background-position: center;  
+
+display: flex;  
+
+align-items: center;  
+
+justify-content: center;  
+
+position: relative;  
+
+}  
+
+.logo-area {  
+
+position: absolute;  
+
+left: 40px;  
+
+top: 50%;  
+
+transform: translateY(-50%);  
+
+}  
+
+.logo-area img {  
+
+width: 150px;  
+
+}  
+
+.login-box {  
+
+background-color: rgba(255, 255, 255, 0.9);  
+
+padding: 40px;  
+
+border-radius: 12px;  
+
+text-align: center;  
+
+}  
+
+.login-box h2 {  
+
+margin-bottom: 20px;  
+
+}  
+
+.login-box input {  
+
+width: 200px;  
+
+padding: 10px;  
+
+margin: 5px;  
+
+}  
+
+.login-box button {  
+
+margin-top: 10px;  
+
+padding: 10px 20px;  
+
+background: #ff6600;  
+
+color: white;  
+
+border: none;  
+
+cursor: pointer;  
+
+}  
+
+.footer {  
+
+font-size: 12px;  
+
+margin-top: 10px;  
+
+}  
+
+body.login-page {  
+
+background-size: cover; /* makes image fill entire screen */  
+
+background-position: center; /* centers it */  
+
+background-repeat: no-repeat; /* no tiling */  
+
+background-attachment: fixed; /* keeps it fixed on scroll */  
+
+min-height: 100vh; /* ensures full viewport height */  
+
+margin: 0;  
+
+padding: 0;  
+
+}  
 
 .top-left-logo {
   position: absolute;
@@ -29,63 +190,93 @@ body, html {
   height: auto;
   z-index: 1000;
 }
+ 
 
-.login-box {
-  background: rgba(255,255,255,0.92);
-  padding: 36px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.18);
-  min-width: 320px;
-}
+/* --- Forgot Password (Blue) --- */  
 
-.login-box h2 {
-  margin-bottom: 12px;
-  color: #222;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-}
+.forgot {  
 
-.login-box input {
-  width: 100%;
-  max-width: 320px;
-  padding: 10px 12px;
-  margin: 8px 0;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 14px;
-}
+display: inline-block;  
 
-.login-box button {
-  margin-top: 8px;
-  padding: 10px 20px;
-  background: #ff6600;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-}
+margin-top: 10px;  
 
-/* Forgot */
-.forgot {
-  display: inline-block;
-  margin-top: 10px;
-  font-size: 14px;
-  color: #007bff;
-  text-decoration: none;
-  font-weight: 500;
-}
-.forgot:hover { color: #0056b3; text-decoration: underline; }
+font-size: 14px;  
 
-/* Footer */
-.footer {
-  font-size: 13px;
-  color: black;
-  text-align: center;
-  margin-top: 20px;
-}
-.footer-links a { color: black; text-decoration: none; margin: 0 6px; }
-.footer-links a:hover { text-decoration: underline; }
+color: #007bff; /* bright blue */  
+
+text-decoration: none;  
+
+font-weight: 500;  
+
+}  
+
+.forgot:hover {  
+
+color: #0056b3; /* darker blue on hover */  
+
+text-decoration: underline;  
+
+}  
+
+/* --- Footer (Black Text + Black Links) --- */  
+
+.footer {  
+
+font-size: 13px;  
+
+color: black;  
+
+text-align: center;  
+
+margin-top: 20px;  
+
+}  
+
+.footer a {  
+
+color: black;  
+
+text-decoration: none;  
+
+margin: 0 5px;  
+
+font-weight: 500;  
+
+}  
+
+.footer a:hover {  
+
+text-decoration: underline;  
+
+}  
+
+/* --- Footer Links Section --- */  
+
+.footer-links {  
+
+text-align: center;  
+
+margin-top: 8px; /* adds space between lines */  
+
+}  
+
+.footer-links a {  
+
+color: black;  
+
+text-decoration: none;  
+
+margin: 0 5px;  
+
+font-weight: 500;  
+
+}  
+
+.footer-links a:hover {  
+
+text-decoration: underline;  
+
+} 
 
 /* ==============================
    PORTAL STYLES
@@ -143,4 +334,20 @@ body, html {
   background-repeat: no-repeat;
   background-size: cover;
   background-attachment: fixed;
+}
+
+/* --- UP THEMES (light blue, red, gold) --- */
+.up-student, .up-tutor, .up-counsellor, .up-admin {
+  background: linear-gradient(135deg, #87CEEB, #B22222, #FFD700);
+}
+
+/* --- Portal Top Left Logo --- */
+.portal-logo {
+  position: fixed; /* always visible even with scroll */
+  top: 15px;
+  left: 15px;
+  width: 130px;
+  height: auto;
+  z-index: 9999; /* ensures it’s above any layer */
+  display: block; /* force visible */
 }
