@@ -69,29 +69,7 @@
     return location.pathname.toLowerCase().includes("admin");
   };
 
-     /* ------------------------------------------------------------
-     6.  MAIN INITIALIZATION
-  ------------------------------------------------------------ */
-  async function init() {
-    const uni = detectUni();
-    const cont = qs('.portal-container') || document.body;
-    let counsellor = load('currentStudent');
-
-    if (!counsellor) {
-      // Minimal mock sign-up/login flow (non-blocking prompts)
-      const name = prompt('Enter your full name to start (or cancel to use demo):');
-      const email = prompt('Enter email (or leave blank):');
-      if (name) {
-        student = { id: uid('counsellor-'), name, email, university: uni };
-        save('currentCounsellor', student);
-        await mockAPI.registerCounsellor(counsellor);
-      } else {
-        // demo counsellor
-        student = { id: uid('counsellor-'), name: 'Demo Counsellor', email: '', university: uni };
-        save('currentCounsellor', counsellor);
-        await mockAPI.registerCounsellor(counsellor);
-      }
-    }
+  
 
   /* ------------------------------------------------------------
      2.  ENHANCED MOCK BACKEND  (Local Only)
@@ -924,23 +902,14 @@
     const uni = detectUni();
     const cont = qs(".portal-container") || document.body;
     const stored = load("currentCounsellor");
-    let counsellor = stored || {};   // keep stored data if any, otherwise new object
-    counsellor.university = detectUni(); // **force current portal’s university**
+       let counsellor = stored;
 
     if (!counsellor) {
-      // Improved mock login prompt (keeps parity with your earlier flow)
+      // Mock login prompt
       const name = prompt("Enter your name to start:");
       const email = prompt("Enter email:");
-      counsellor = {
-        id: uid("counsellor-"),
-        name,
-        email,
-        university: uni,
-        availableNow: false,
-        photo: "",
-        qualifications: "",
-        services: "",
-      };
+      counsellor = { id: uid("counsellor-"), name, email, university: uni, availableNow: false };
+    
       save("currentCounsellor", counsellor);
       await mockAPI.registerCounsellor(counsellor);
     }
