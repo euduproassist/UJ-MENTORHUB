@@ -69,6 +69,30 @@
     return location.pathname.toLowerCase().includes("admin");
   };
 
+     /* ------------------------------------------------------------
+     6.  MAIN INITIALIZATION
+  ------------------------------------------------------------ */
+  async function init() {
+    const uni = detectUni();
+    const cont = qs('.portal-container') || document.body;
+    let counsellor = load('currentStudent');
+
+    if (!counsellor) {
+      // Minimal mock sign-up/login flow (non-blocking prompts)
+      const name = prompt('Enter your full name to start (or cancel to use demo):');
+      const email = prompt('Enter email (or leave blank):');
+      if (name) {
+        student = { id: uid('counsellor-'), name, email, university: uni };
+        save('currentCounsellor', student);
+        await mockAPI.registerCounsellor(counsellor);
+      } else {
+        // demo counsellor
+        student = { id: uid('counsellor-'), name: 'Demo Counsellor', email: '', university: uni };
+        save('currentCounsellor', counsellor);
+        await mockAPI.registerCounsellor(counsellor);
+      }
+    }
+
   /* ------------------------------------------------------------
      2.  ENHANCED MOCK BACKEND  (Local Only)
         - Simulates meeting links, reminders, calendar entries
