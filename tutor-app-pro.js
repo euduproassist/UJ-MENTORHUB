@@ -62,7 +62,11 @@
       profile.id = profile.id || uid("tutor-");
       tutors[profile.id] = profile;
       save("tutors", tutors);
+      // sync tutor into global admin+student system
+      syncTutorToUsers(profile);
+
       return { ok: true, tutor: profile };
+
     },
 
     async loginTutor({ email, tutorNumber, password }) {
@@ -109,6 +113,40 @@
       const rs = load("ratings", []);
       return rs.filter((r) => r.tutorId === tutorId);
     },
+     /* ------------------------------------------------------------
+   SYNC TUTOR INTO MAIN SYSTEM USERS (Admin + Student portals)
+------------------------------------------------------------ */
+function syncTutorToUsers(tutor) {
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+  // Check if already exists
+  const existing = users.find(u => u.id === tutor.id);
+  if (existing) {
+    // update
+    Object.assign(existing, {
+      name: tutor.name,
+      email: tutor.email,
+      role: "tutor",
+      suspended: existing.suspended || false,
+      modules: tutor.modules || "",
+      availableNow: tutor.availableNow || false
+    });
+  } else {
+    // add new
+    users.push({
+      id: tutor.id,
+      name: tutor.name,
+      email: tutor.email,
+      role: "tutor",
+      suspended: false,
+      modules: tutor.modules || "",
+      availableNow: tutor.availableNow || false
+    });
+  }
+
+  localStorage.setItem("users", JSON.stringify(users));
+}
+
   };
 
   /* ------------------------------------------------------------
@@ -392,6 +430,7 @@
         });
         await mockAPI.registerTutor(t);
         save("currentTutor", t);
+        syncTutorToUsers(t);
         showToast("Profile saved");
       };
       form.append(name, email, bio, modules, saveBtn);
@@ -534,6 +573,7 @@
     ui.querySelector("#toggleAvail").onclick = () => {
       tutor.availableNow = !tutor.availableNow;
       save("currentTutor", tutor);
+      syncTutorToUsers(tutor);
       showToast(`You are now ${tutor.availableNow ? "Available" : "Offline"}`);
       init();
     };
