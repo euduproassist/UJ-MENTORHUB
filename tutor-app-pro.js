@@ -67,7 +67,43 @@
 
       return { ok: true, tutor: profile };
 
+       /* ------------------------------------------------------------
+   SYNC TUTOR INTO MAIN SYSTEM USERS (Admin + Student portals)
+------------------------------------------------------------ */
+function syncTutorToUsers(tutor) {
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+  // Check if already exists
+  const existing = users.find(u => u.id === tutor.id);
+  if (existing) {
+    // update
+    Object.assign(existing, {
+      name: tutor.name,
+      email: tutor.email,
+      role: "tutor",
+      suspended: existing.suspended || false,
+      modules: tutor.modules || "",
+      availableNow: tutor.availableNow || false
+    });
+  } else {
+    // add new
+    users.push({
+      id: tutor.id,
+      name: tutor.name,
+      email: tutor.email,
+      role: "tutor",
+      suspended: false,
+      modules: tutor.modules || "",
+      availableNow: tutor.availableNow || false
+    });
+  }
+
+  localStorage.setItem("users", JSON.stringify(users));
+}
+
+
     },
+     
 
     async loginTutor({ email, tutorNumber, password }) {
       await delay(200);
@@ -113,39 +149,7 @@
       const rs = load("ratings", []);
       return rs.filter((r) => r.tutorId === tutorId);
     },
-     /* ------------------------------------------------------------
-   SYNC TUTOR INTO MAIN SYSTEM USERS (Admin + Student portals)
------------------------------------------------------------- */
-function syncTutorToUsers(tutor) {
-  const users = JSON.parse(localStorage.getItem("users") || "[]");
 
-  // Check if already exists
-  const existing = users.find(u => u.id === tutor.id);
-  if (existing) {
-    // update
-    Object.assign(existing, {
-      name: tutor.name,
-      email: tutor.email,
-      role: "tutor",
-      suspended: existing.suspended || false,
-      modules: tutor.modules || "",
-      availableNow: tutor.availableNow || false
-    });
-  } else {
-    // add new
-    users.push({
-      id: tutor.id,
-      name: tutor.name,
-      email: tutor.email,
-      role: "tutor",
-      suspended: false,
-      modules: tutor.modules || "",
-      availableNow: tutor.availableNow || false
-    });
-  }
-
-  localStorage.setItem("users", JSON.stringify(users));
-}
 
   };
 
