@@ -136,6 +136,10 @@
       save("ratings", sampleRatings);
     }
   }
+   if (!load("loginLogs")) save("loginLogs", []);
+if (!load("needHelpNow")) save("needHelpNow", []);
+if (!load("anonymousReports")) save("anonymousReports", []);
+
   seedIfEmpty();
 
   /* -------------------------
@@ -227,6 +231,50 @@
       });
       return metrics.sort((a, b) => (b.completed || 0) - (a.completed || 0));
     }
+         /* -------------------------
+       NEW REPORT FUNCTIONS
+    ------------------------- */
+
+    async getRatings(from = null, to = null) {
+      await delay(60);
+      let r = load("ratings", []).slice();
+
+      if (from) r = r.filter((x) => new Date(x.date) >= new Date(from));
+      if (to)   r = r.filter((x) => new Date(x.date) <= new Date(to));
+
+      return r;
+    },
+
+    async getActivityHours(from = null, to = null) {
+      await delay(60);
+      let logs = load("loginLogs", []) || [];
+
+      if (from) logs = logs.filter(l => new Date(l.start) >= new Date(from));
+      if (to)   logs = logs.filter(l => new Date(l.end || l.start) <= new Date(to));
+
+      return logs;
+    },
+
+    async getNeedHelpNow(from = null, to = null) {
+      await delay(60);
+      let list = load("needHelpNow", []) || [];
+
+      if (from) list = list.filter(n => new Date(n.date) >= new Date(from));
+      if (to)   list = list.filter(n => new Date(n.date) <= new Date(to));
+
+      return list;
+    },
+
+    async getAnonymous(from = null, to = null) {
+      await delay(60);
+      let anon = load("anonymousReports", []) || [];
+
+      if (from) anon = anon.filter(a => new Date(a.date) >= new Date(from));
+      if (to)   anon = anon.filter(a => new Date(a.date) <= new Date(to));
+
+      return anon;
+    }
+
   };
 
   /* -------------------------
