@@ -10,20 +10,7 @@
     - Activity Monitor: response times, ignored counts, top performers
     - Mock backend using localStorage (pre-seeds sample data if none)
    ============================================================ */
-// Initialize Firebase
-firebase.initializeApp({
-  apiKey: "AIzaSyB6POw4_CgAYTT4QD_zXS30yJeIqJoVes0",
-  authDomain: "mentorhub-web-92164.firebaseapp.com",
-  projectId: "mentorhub-web-92164",
-  storageBucket: "mentorhub-web-92164.appspot.com",
-  messagingSenderId: "800308345728",
-  appId: "1:800308345728:web:d23b50e5b71622a7021f65"
-});
 
-// References for backend
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
 
 (function () {
   "use strict";
@@ -67,54 +54,181 @@ const storage = firebase.storage();
   const fmtDate = (d) =>
     d ? new Date(d).toLocaleString() : "";
 
- // Sign up a new user
-function signUp(email, password, name, role) {
-  auth.createUserWithEmailAndPassword(email, password)
-    .then(userCredential => {
-      const user = userCredential.user;
-      return db.collection('users').doc(user.uid).set({
-        name: name,
-        email: email,
-        role: role,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        status: 'active',
-        ratings: { average: 0, count: 0 },
-        profilePicture: ''
-      });
-    })
-    .then(() => alert('Account created!'))
-    .catch(error => alert(error.message));
-}
+/* -------------------------
+     Mock Data Seeding
+  ------------------------- */
+  function seedIfEmpty() {
+    const users = load("users", null);
+    if (!users) {
+      const sampleTutors = [
+        { id: uid("u-"), role: "tutor", name: "Alice M", email: "alice@uj.ac.za", suspended: false },
+        { id: uid("u-"), role: "tutor", name: "Bongani K", email: "bongani@wits.ac.za", suspended: false },
+        { id: uid("u-"), role: "tutor", name: "Chen L", email: "chen@up.ac.za", suspended: false },
+      ];
+      const sampleCounsellors = [
+        { id: uid("u-"), role: "counsellor", name: "Dr. Peters", email: "peters@uj.ac.za", suspended: false },
+      ];
+      save("users", [...sampleTutors, ...sampleCounsellors]);
+    }
 
-// Sign in
-function signIn(email, password) {
-  auth.signInWithEmailAndPassword(email, password)
-    .then(userCredential => alert('Logged in!'))
-    .catch(error => alert(error.message));
-}
-function sendSessionRequest(studentId, tutorOrCounsellorId, type, sessionDate) {
-  db.collection('sessions').add({
-    studentId: studentId,
-    tutorId: type === 'tutor' ? tutorOrCounsellorId : '',
-    counsellorId: type === 'counsellor' ? tutorOrCounsellorId : '',
-    status: 'pending',
-    sessionDate: sessionDate,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    notes: '',
-    reportFile: ''
-  }).then(() => alert('Session request sent!'))
-    .catch(error => alert(error.message));
-}
-function uploadReport(file, sessionId) {
-  const storageRef = storage.ref('reports/' + file.name);
-  storageRef.put(file).then(snapshot => {
-    snapshot.ref.getDownloadURL().then(url => {
-      db.collection('sessions').doc(sessionId).update({
-        reportFile: url
-      }).then(() => alert('Report uploaded!'));
-    });
-  }).catch(error => alert(error.message));
-}
+    const requests = load("requests", null);
+    if (!requests) {
+      const now = Date.now();
+      const sample = [
+        {
+          id: uid("r-"),
+          type: "tutoring",
+          date: new Date(now - 1000 * 60 * 60 * 24 * 9).toISOString(),
+          studentName: "Thabo",
+          toId: load("users")[0].id,
+          toName: load("users")[0].name,
+          status: "Pending",
+          rejectedBy: null,
+          comments: "Needs calculus help",
+          respondedAt: null
+        },
+        {
+          id: uid("r-"),
+          type: "counselling",
+          date: new Date(now - 1000 * 60 * 60 * 24 * 6).toISOString(),
+          studentName: "Zanele",
+          toId: load("users")[3] ? load("users")[3].id : uid("u-"),
+          toName: load("users")[3] ? load("users")[3].name : "Counsellor",
+          status: "Approved",
+          rejectedBy: null,
+          comments: "Stress & exam anxiety",
+          respondedAt: new Date(now - 1000 * 60 * 60 * 24 * 5).toISOString()
+        },
+        {
+          id: uid("r-"),
+          type: "tutoring",
+          date: new Date(now - 1000 * 60 * 60 * 24 * 3).toISOString(),
+          studentName: "Lerato",
+          toId: load("users")[1].id,
+          toName: load("users")[1].name,
+          status: "Rejected",
+          rejectedBy: "Bongani K",
+          comments: "Schedule conflict",
+          respondedAt: new Date(now - 1000 * 60 * 60 * 24 * 2).toISOString()
+        },
+        {
+          id: uid("r-"),
+          type: "tutoring",
+          date: new Date(now - 1000 * 60 * 60 * 24 * 1).toISOString(),
+          studentName: "Siphiwe",
+          toId: load("users")[2].id,
+          toName: load("users")[2].name,
+          status: "Ignored",
+          rejectedBy: null,
+          comments: "No response",
+          respondedAt: null
+        }
+      ];
+      save("requests", sample);
+    }
+
+    const ratings = load("ratings", null);
+    if (!ratings) {
+      const sampleRatings = [
+        { id: uid("rt-"), userId: load("users")[0].id, by: "Thabo", rating: 4, comment: "Very clear", date: new Date().toISOString() },
+        { id: uid("rt-"), userId: load("users")[1].id, by: "Lerato", rating: 3, comment: "Okay, arrived late", date: new Date().toISOString() },
+        { id: uid("rt-"), userId: load("users")[2].id, by: "Siphiwe", rating: 5, comment: "Excellent!", date: new Date().toISOString() }
+      ];
+      save("ratings", sampleRatings);
+    }
+  }
+  seedIfEmpty();
+
+  /* -------------------------
+     Mock API (localStorage)
+  ------------------------- */
+  const mockAPI = {
+    async fetchOverview() {
+      await delay(120);
+      const reqs = load("requests", []);
+      const tutoring = reqs.filter((r) => r.type === "tutoring");
+      const counselling = reqs.filter((r) => r.type === "counselling");
+      const summary = (arr) => ({
+        total: arr.length,
+        approved: arr.filter((r) => r.status === "Approved").length,
+        rejected: arr.filter((r) => r.status === "Rejected").length,
+        pending: arr.filter((r) => r.status === "Pending").length,
+        ignored: arr.filter((r) => r.status === "Ignored").length,
+      });
+      return { ok: true, tutoring: summary(tutoring), counselling: summary(counselling) };
+    },
+
+    async fetchUsers(role = null) {
+      await delay(80);
+      const users = load("users", []);
+      return (role ? users.filter((u) => u.role === role) : users).slice();
+    },
+
+    async deleteUser(id) {
+      await delay(100);
+      let users = load("users", []);
+      users = users.filter((u) => u.id !== id);
+      save("users", users);
+
+      // reassigned requests: mark toName as "Deleted Account" for visibility
+      let reqs = load("requests", []);
+      reqs = reqs.map((r) => (r.toId === id ? { ...r, toName: "Deleted Account" } : r));
+      save("requests", reqs);
+      return { ok: true };
+    },
+
+    async toggleSuspendUser(id) {
+      await delay(80);
+      const users = load("users", []);
+      const i = users.findIndex((u) => u.id === id);
+      if (i < 0) return { ok: false };
+      users[i].suspended = !users[i].suspended;
+      save("users", users);
+      return { ok: true, user: users[i] };
+    },
+
+    async fetchRequests({ from, to, type } = {}) {
+      await delay(120);
+      let reqs = load("requests", []).slice();
+      if (type) reqs = reqs.filter((r) => r.type === type);
+      if (from) reqs = reqs.filter((r) => new Date(r.date) >= new Date(from));
+      if (to) reqs = reqs.filter((r) => new Date(r.date) <= new Date(to));
+      return reqs;
+    },
+
+    async fetchRatings(userId = null) {
+      await delay(70);
+      let r = load("ratings", []).slice();
+      if (userId) r = r.filter((x) => x.userId === userId);
+      return r;
+    },
+
+    async fetchActivityMetrics() {
+      await delay(80);
+      const reqs = load("requests", []);
+      const users = load("users", []);
+      // For each user compute response time average and ignored count
+      const metrics = users.map((u) => {
+        const toReqs = reqs.filter((r) => r.toId === u.id);
+        const respondedReqs = toReqs.filter((r) => r.respondedAt);
+        const avgResponse = respondedReqs.length
+          ? respondedReqs.reduce((sum, r) => sum + (new Date(r.respondedAt) - new Date(r.date)), 0) / respondedReqs.length
+          : null;
+        const ignored = toReqs.filter((r) => r.status === "Ignored").length;
+        const completed = toReqs.filter((r) => r.status === "Approved").length;
+        return {
+          userId: u.id,
+          name: u.name,
+          role: u.role,
+          avgResponseMs: avgResponse,
+          ignored,
+          completed,
+          total: toReqs.length,
+        };
+      });
+      return metrics.sort((a, b) => (b.completed || 0) - (a.completed || 0));
+    }
+  };
 
 
   /* -------------------------
