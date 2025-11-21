@@ -10,6 +10,20 @@
     - Activity Monitor: response times, ignored counts, top performers
     - Mock backend using localStorage (pre-seeds sample data if none)
    ============================================================ */
+// Initialize Firebase
+firebase.initializeApp({
+  apiKey: "AIzaSyB6POw4_CgAYTT4QD_zXS30yJeIqJoVes0",
+  authDomain: "mentorhub-web-92164.firebaseapp.com",
+  projectId: "mentorhub-web-92164",
+  storageBucket: "mentorhub-web-92164.appspot.com",
+  messagingSenderId: "800308345728",
+  appId: "1:800308345728:web:d23b50e5b71622a7021f65"
+});
+
+// References for backend
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
 
 (function () {
   "use strict";
