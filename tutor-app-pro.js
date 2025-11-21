@@ -3,20 +3,6 @@
    Complete Tutor Portal Frontend + Mock Backend
    Version: 1.0 (Hybrid AI–Material Design)
    ============================================================ */
-// Initialize Firebase
-firebase.initializeApp({
-  apiKey: "AIzaSyB6POw4_CgAYTT4QD_zXS30yJeIqJoVes0",
-  authDomain: "mentorhub-web-92164.firebaseapp.com",
-  projectId: "mentorhub-web-92164",
-  storageBucket: "mentorhub-web-92164.appspot.com",
-  messagingSenderId: "800308345728",
-  appId: "1:800308345728:web:d23b50e5b71622a7021f65"
-});
-
-// References for backend
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
 
 
 (function () {
@@ -67,54 +53,64 @@ const storage = firebase.storage();
   ------------------------------------------------------------ */
   const detectUni = () => "uj";
 
-// Sign up a new user
-function signUp(email, password, name, role) {
-  auth.createUserWithEmailAndPassword(email, password)
-    .then(userCredential => {
-      const user = userCredential.user;
-      return db.collection('users').doc(user.uid).set({
-        name: name,
-        email: email,
-        role: role,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        status: 'active',
-        ratings: { average: 0, count: 0 },
-        profilePicture: ''
-      });
-    })
-    .then(() => alert('Account created!'))
-    .catch(error => alert(error.message));
-}
+    /* ------------------------------------------------------------
+     2.  MOCK BACKEND  (Local Only)
+  ------------------------------------------------------------ */
+  const mockAPI = {
+    async registerTutor(profile) {
+      await delay(200);
+      const tutors = load("tutors", {});
+      profile.id = profile.id || uid("tutor-");
+      tutors[profile.id] = profile;
+      save("tutors", tutors);
+      return { ok: true, tutor: profile };
+    },
 
-// Sign in
-function signIn(email, password) {
-  auth.signInWithEmailAndPassword(email, password)
-    .then(userCredential => alert('Logged in!'))
-    .catch(error => alert(error.message));
-}
-function sendSessionRequest(studentId, tutorOrCounsellorId, type, sessionDate) {
-  db.collection('sessions').add({
-    studentId: studentId,
-    tutorId: type === 'tutor' ? tutorOrCounsellorId : '',
-    counsellorId: type === 'counsellor' ? tutorOrCounsellorId : '',
-    status: 'pending',
-    sessionDate: sessionDate,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    notes: '',
-    reportFile: ''
-  }).then(() => alert('Session request sent!'))
-    .catch(error => alert(error.message));
-}
-function uploadReport(file, sessionId) {
-  const storageRef = storage.ref('reports/' + file.name);
-  storageRef.put(file).then(snapshot => {
-    snapshot.ref.getDownloadURL().then(url => {
-      db.collection('sessions').doc(sessionId).update({
-        reportFile: url
-      }).then(() => alert('Report uploaded!'));
-    });
-  }).catch(error => alert(error.message));
-}
+    async loginTutor({ email, tutorNumber, password }) {
+      await delay(200);
+      const tutors = Object.values(load("tutors", {}));
+      const found = tutors.find(
+        (t) => t.email === email || t.tutorNumber === tutorNumber
+      );
+      if (found && (!password || password === found.password))
+        return { ok: true, tutor: found };
+      return { ok: false, error: "Invalid credentials" };
+    },
+
+    async fetchRequests(tutorId) {
+      await delay(150);
+      const reqs = load("requests", []);
+      return reqs.filter((r) => r.tutorId === tutorId);
+    },
+
+    async updateRequest(id, patch) {
+      const reqs = load("requests", []);
+      const i = reqs.findIndex((r) => r.id === id);
+      if (i < 0) return { ok: false };
+      reqs[i] = { ...reqs[i], ...patch };
+      save("requests", reqs);
+      return { ok: true, request: reqs[i] };
+    },
+
+    async submitReport(data) {
+      const reports = load("reports", []);
+      reports.push(data);
+      save("reports", reports);
+      return { ok: true };
+    },
+
+    async uploadVideo(video) {
+      const vids = load("videos", []);
+      vids.push(video);
+      save("videos", vids);
+      return { ok: true };
+    },
+
+    async fetchRatings(tutorId) {
+      const rs = load("ratings", []);
+      return rs.filter((r) => r.tutorId === tutorId);
+    },
+  };
 
 
   /* ------------------------------------------------------------
