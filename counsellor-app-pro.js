@@ -85,164 +85,56 @@ const storage = firebase.storage();
   };
 
   
+// Sign up a new user
+function signUp(email, password, name, role) {
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      const user = userCredential.user;
+      return db.collection('users').doc(user.uid).set({
+        name: name,
+        email: email,
+        role: role,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        status: 'active',
+        ratings: { average: 0, count: 0 },
+        profilePicture: ''
+      });
+    })
+    .then(() => alert('Account created!'))
+    .catch(error => alert(error.message));
+}
 
-  /* ------------------------------------------------------------
-     2.  ENHANCED MOCK BACKEND  (Local Only)
-        - Simulates meeting links, reminders, calendar entries
-  ------------------------------------------------------------ */
-  const mockAPI = {
-    async registerCounsellor(profile) {
-      await delay(200);
-      const counsellors = load("counsellors", {});
-      profile.id = profile.id || uid("counsellor-");
-      counsellors[profile.id] = profile;
-      save("counsellors", counsellors);
-      return { ok: true, counsellor: profile };
-    },
+// Sign in
+function signIn(email, password) {
+  auth.signInWithEmailAndPassword(email, password)
+    .then(userCredential => alert('Logged in!'))
+    .catch(error => alert(error.message));
+}
+function sendSessionRequest(studentId, tutorOrCounsellorId, type, sessionDate) {
+  db.collection('sessions').add({
+    studentId: studentId,
+    tutorId: type === 'tutor' ? tutorOrCounsellorId : '',
+    counsellorId: type === 'counsellor' ? tutorOrCounsellorId : '',
+    status: 'pending',
+    sessionDate: sessionDate,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    notes: '',
+    reportFile: ''
+  }).then(() => alert('Session request sent!'))
+    .catch(error => alert(error.message));
+}
+function uploadReport(file, sessionId) {
+  const storageRef = storage.ref('reports/' + file.name);
+  storageRef.put(file).then(snapshot => {
+    snapshot.ref.getDownloadURL().then(url => {
+      db.collection('sessions').doc(sessionId).update({
+        reportFile: url
+      }).then(() => alert('Report uploaded!'));
+    });
+  }).catch(error => alert(error.message));
+}
 
-    async loginCounsellor({ email, counsellorNumber, password }) {
-      await delay(200);
-      const counsellors = Object.values(load("counsellors", {}));
-      const found = counsellors.find(
-        (c) => c.email === email || c.counsellorNumber === counsellorNumber
-      );
-      if (found && (!password || password === found.password))
-        return { ok: true, counsellor: found };
-      return { ok: false, error: "Invalid credentials" };
-    },
-
-    async fetchRequests(counsellorId) {
-      await delay(150);
-      const reqs = load("requests", []);
-      return reqs.filter((r) => r.counsellorId === counsellorId);
-    },
-
-    async createRequest(request) {
-      await delay(150);
-      const reqs = load("requests", []);
-      request.id = request.id || uid("req-");
-      request.status = request.status || "Pending";
-      request.anonymous = !!request.anonymous;
-      reqs.push(request);
-      save("requests", reqs);
-      // schedule reminder if requested (mock)
-      if (request.remind) {
-        scheduleMockReminder(request);
-      }
-      return { ok: true, request };
-    },
-
-    async updateRequest(id, patch) {
-      const reqs = load("requests", []);
-      const i = reqs.findIndex((r) => r.id === id);
-      if (i < 0) return { ok: false };
-      reqs[i] = { ...reqs[i], ...patch };
-      save("requests", reqs);
-      // on approve, create calendar entry
-      if (patch.status && patch.status === "Approved") {
-        createCalendarEntry(reqs[i]);
-        // make simulated join links
-        reqs[i].joinLinks = createMockMeetingLinks(reqs[i]);
-        save("requests", reqs); // persist joinLinks
-      }
-      return { ok: true, request: reqs[i] };
-    },
-
-    async submitReport(data) {
-      const reports = load("reports", []);
-      data.id = data.id || uid("rep-");
-      reports.push(data);
-      save("reports", reports);
-      // attach to student record if wanted
-      if (data.followUp && data.followUp !== "") {
-        // create a follow-up request that's linked
-        const followReq = {
-          id: uid("req-"),
-          counsellorId: data.counsellorId,
-          studentId: data.studentId,
-          studentName: data.studentName,
-          reason: "Follow-up",
-          datetime: data.followUp,
-          mode: "Online",
-          status: "Approved",
-          linkedReport: data.id,
-        };
-        const reqs = load("requests", []);
-        reqs.push(followReq);
-        save("requests", reqs);
-        // calendar
-        createCalendarEntry(followReq);
-      }
-      return { ok: true };
-    },
-
-    async uploadVideo(video) {
-      const vids = load("videos", []);
-      video.id = uid("vid-");
-      vids.push(video);
-      save("videos", vids);
-      return { ok: true, video };
-    },
-
-    async fetchRatings(counsellorId) {
-      const rs = load("ratings", []);
-      return rs.filter((r) => r.counsellorId === counsellorId);
-    },
-
-    async fetchCalendar(counsellorId) {
-      const cal = load("calendar", []);
-      return cal.filter((e) => e.counsellorId === counsellorId);
-    },
-
-    async fetchAllRequestsAdmin() {
-      // For admin visibility: return all requests, including private flags
-      return load("requests", []);
-    },
-  };
-
-  /* --------------- Helper functions for mock backend ------------- */
-  function createMockMeetingLinks(req) {
-    // generate simulated links for Zoom/Teams/Meet
-    const base = "https://meet.mock/";
-    return {
-      zoom: `${base}zoom/${uid("z-")}`,
-      teams: `${base}teams/${uid("t-")}`,
-      meet: `${base}meet/${uid("g-")}`,
-      preferred: "zoom",
-    };
-  }
-
-  function createCalendarEntry(req) {
-    const cal = load("calendar", []);
-    const entry = {
-      id: uid("cal-"),
-      counsellorId: req.counsellorId,
-      title: `${req.studentName || "Student"} — ${req.reason || "Session"}`,
-      start: req.datetime,
-      mode: req.mode || "Online",
-      requestId: req.id,
-      createdAt: new Date().toISOString(),
-    };
-    cal.push(entry);
-    save("calendar", cal);
-    // schedule a mock reminder
-    scheduleMockReminder(req);
-  }
-
-  function scheduleMockReminder(req) {
-    // This is mock: store reminders in localStorage. No background timer after page closed.
-    const reminders = load("reminders", []);
-    const r = {
-      id: uid("rem-"),
-      requestId: req.id,
-      counsellorId: req.counsellorId,
-      when: req.datetime,
-      createdAt: new Date().toISOString(),
-      sent: false,
-    };
-    reminders.push(r);
-    save("reminders", reminders);
-  }
+ 
 
   /* ------------------------------------------------------------
      3.  DASHBOARD LAYOUT + DESIGN (extended UI + style additions)
