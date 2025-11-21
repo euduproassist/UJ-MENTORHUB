@@ -53,83 +53,58 @@
   ------------------------------------------------------------ */
   const detectUni = () => "uj";
 
-  /* ------------------------------------------------------------
-     2.  MOCK BACKEND  (Local Only)
-  ------------------------------------------------------------ */
-  const mockAPI = {
-    async registerStudent(profile) {
-      await delay(150);
-      const students = load("students", {});
-      profile.id = profile.id || uid("student-");
-      students[profile.id] = profile;
-      save("students", students);
-      return { ok: true, student: profile };
-    },
 
-    async loginStudent({ email, studentNumber, password }) {
-      await delay(150);
-      const students = Object.values(load("students", {}));
-      const found = students.find(
-        (s) => s.email === email || s.studentNumber === studentNumber
-      );
-      if (found && (!password || password === found.password)) return { ok: true, student: found };
-      return { ok: false, error: "Invalid credentials" };
-    },
-
-    async searchHelpers({ role = "tutor", query = "", module = "", type = "" } = {}) {
-      await delay(120);
-      const all = Object.values(load("tutors", {}));
-      return all.filter((t) => {
-        if (role && t.role && t.role !== role && !(role === "tutor" && !t.role)) return false;
-        if (query && !t.name.toLowerCase().includes(query.toLowerCase())) return false;
-        if (module && !(t.modules || "").toLowerCase().includes(module.toLowerCase())) return false;
-        if (type && t.type && t.type !== type) return false;
-        return true;
+// Sign up a new user
+function signUp(email, password, name, role) {
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      const user = userCredential.user;
+      return db.collection('users').doc(user.uid).set({
+        name: name,
+        email: email,
+        role: role,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        status: 'active',
+        ratings: { average: 0, count: 0 },
+        profilePicture: ''
       });
-    },
+    })
+    .then(() => alert('Account created!'))
+    .catch(error => alert(error.message));
+}
 
-    async sendRequest(request) {
-      await delay(120);
-      const reqs = load("requests", []);
-      request.id = request.id || uid("req-");
-      request.status = "Pending";
-      request.createdAt = new Date().toISOString();
-      reqs.push(request);
-      save("requests", reqs);
-      const notes = load("notifications", []);
-      notes.push({ id: uid("n-"), to: request.tutorId, message: `New request from ${request.studentName}`, date: new Date().toISOString(), read: false });
-      save("notifications", notes);
-      return { ok: true, request };
-    },
+// Sign in
+function signIn(email, password) {
+  auth.signInWithEmailAndPassword(email, password)
+    .then(userCredential => alert('Logged in!'))
+    .catch(error => alert(error.message));
+}
+function sendSessionRequest(studentId, tutorOrCounsellorId, type, sessionDate) {
+  db.collection('sessions').add({
+    studentId: studentId,
+    tutorId: type === 'tutor' ? tutorOrCounsellorId : '',
+    counsellorId: type === 'counsellor' ? tutorOrCounsellorId : '',
+    status: 'pending',
+    sessionDate: sessionDate,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    notes: '',
+    reportFile: ''
+  }).then(() => alert('Session request sent!'))
+    .catch(error => alert(error.message));
+}
+function uploadReport(file, sessionId) {
+  const storageRef = storage.ref('reports/' + file.name);
+  storageRef.put(file).then(snapshot => {
+    snapshot.ref.getDownloadURL().then(url => {
+      db.collection('sessions').doc(sessionId).update({
+        reportFile: url
+      }).then(() => alert('Report uploaded!'));
+    });
+  }).catch(error => alert(error.message));
+}
 
-    async fetchStudentRequests(studentId) {
-      await delay(120);
-      const reqs = load("requests", []);
-      return reqs.filter((r) => r.studentId === studentId).sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
-    },
 
-    async fetchNotificationsForStudent(studentId) {
-      await delay(80);
-      const notes = load("notifications", []);
-      return notes.filter((n) => n.to === studentId || n.forStudent === studentId);
-    },
-
-    async submitRating(data) {
-      await delay(80);
-      const ratings = load("ratings", []);
-      ratings.push(data);
-      save("ratings", ratings);
-      return { ok: true };
-    },
-
-    async fetchHistory(studentId) {
-      await delay(80);
-      const reqs = load("requests", []);
-      const reports = load("reports", []);
-      return { requests: reqs.filter((r) => r.studentId === studentId), reports: reports.filter((r) => r.studentId === studentId) };
-    },
-  };
-
+   
   /* ------------------------------------------------------------
      3.  DASHBOARD UI
   ------------------------------------------------------------ */
