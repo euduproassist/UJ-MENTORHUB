@@ -54,6 +54,12 @@
   const fmtDate = (d) =>
     d ? new Date(d).toLocaleString() : "";
 
+import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+const db = getFirestore(app); // 'app' comes from firebaseauth.js
+
+
+   
 /* -------------------------
      Mock Data Seeding
   ------------------------- */
@@ -140,95 +146,97 @@
   seedIfEmpty();
 
   /* -------------------------
-     Mock API (localStorage)
+     Mock API 
   ------------------------- */
-  const mockAPI = {
-    async fetchOverview() {
-      await delay(120);
-      const reqs = load("requests", []);
-      const tutoring = reqs.filter((r) => r.type === "tutoring");
-      const counselling = reqs.filter((r) => r.type === "counselling");
-      const summary = (arr) => ({
-        total: arr.length,
-        approved: arr.filter((r) => r.status === "Approved").length,
-        rejected: arr.filter((r) => r.status === "Rejected").length,
-        pending: arr.filter((r) => r.status === "Pending").length,
-        ignored: arr.filter((r) => r.status === "Ignored").length,
-      });
-      return { ok: true, tutoring: summary(tutoring), counselling: summary(counselling) };
-    },
 
-    async fetchUsers(role = null) {
-      await delay(80);
-      const users = load("users", []);
-      return (role ? users.filter((u) => u.role === role) : users).slice();
-    },
+   const mockAPI = {
+  async fetchOverview() {
+    await delay(120);
+    const reqsSnap = await db.collection("requests").get();
+    const reqs = reqsSnap.docs.map(d => d.data());
+    const tutoring = reqs.filter(r => r.type === "tutoring");
+    const counselling = reqs.filter(r => r.type === "counselling");
+    const summary = (arr) => ({
+      total: arr.length,
+      approved: arr.filter(r => r.status === "Approved").length,
+      rejected: arr.filter(r => r.status === "Rejected").length,
+      pending: arr.filter(r => r.status === "Pending").length,
+      ignored: arr.filter(r => r.status === "Ignored").length,
+    });
+    return { ok: true, tutoring: summary(tutoring), counselling: summary(counselling) };
+  },
 
-    async deleteUser(id) {
-      await delay(100);
-      let users = load("users", []);
-      users = users.filter((u) => u.id !== id);
-      save("users", users);
+  async fetchUsers(role = null) {
+    await delay(80);
+    const usersSnap = await db.collection("users").get();
+    let users = usersSnap.docs.map(d => d.data());
+    if (role) users = users.filter(u => u.role === role);
+    return users;
+  },
 
-      // reassigned requests: mark toName as "Deleted Account" for visibility
-      let reqs = load("requests", []);
-      reqs = reqs.map((r) => (r.toId === id ? { ...r, toName: "Deleted Account" } : r));
-      save("requests", reqs);
-      return { ok: true };
-    },
+  async deleteUser(id) {
+    await db.collection("users").doc(id).delete();
+    const reqsSnap = await db.collection("requests").where("toId", "==", id).get();
+    const batch = db.batch();
+    reqsSnap.docs.forEach(d => batch.update(d.ref, { toName: "Deleted Account" }));
+    await batch.commit();
+    return { ok: true };
+  },
 
-    async toggleSuspendUser(id) {
-      await delay(80);
-      const users = load("users", []);
-      const i = users.findIndex((u) => u.id === id);
-      if (i < 0) return { ok: false };
-      users[i].suspended = !users[i].suspended;
-      save("users", users);
-      return { ok: true, user: users[i] };
-    },
+  async toggleSuspendUser(id) {
+    const ref = db.collection("users").doc(id);
+    const doc = await ref.get();
+    if (!doc.exists) return { ok: false };
+    const suspended = !doc.data().suspended;
+    await ref.update({ suspended });
+    return { ok: true, user: { ...doc.data(), suspended } };
+  },
 
-    async fetchRequests({ from, to, type } = {}) {
-      await delay(120);
-      let reqs = load("requests", []).slice();
-      if (type) reqs = reqs.filter((r) => r.type === type);
-      if (from) reqs = reqs.filter((r) => new Date(r.date) >= new Date(from));
-      if (to) reqs = reqs.filter((r) => new Date(r.date) <= new Date(to));
-      return reqs;
-    },
+  async fetchRequests({ from, to, type } = {}) {
+    let q = db.collection("requests");
+    if (type) q = q.where("type", "==", type);
+    const snap = await q.get();
+    let reqs = snap.docs.map(d => d.data());
+    if (from) reqs = reqs.filter(r => new Date(r.date) >= new Date(from));
+    if (to) reqs = reqs.filter(r => new Date(r.date) <= new Date(to));
+    return reqs;
+  },
 
-    async fetchRatings(userId = null) {
-      await delay(70);
-      let r = load("ratings", []).slice();
-      if (userId) r = r.filter((x) => x.userId === userId);
-      return r;
-    },
+  async fetchRatings(userId = null) {
+    let q = db.collection("ratings");
+    const snap = await q.get();
+    let ratings = snap.docs.map(d => d.data());
+    if (userId) ratings = ratings.filter(r => r.userId === userId);
+    return ratings;
+  },
 
-    async fetchActivityMetrics() {
-      await delay(80);
-      const reqs = load("requests", []);
-      const users = load("users", []);
-      // For each user compute response time average and ignored count
-      const metrics = users.map((u) => {
-        const toReqs = reqs.filter((r) => r.toId === u.id);
-        const respondedReqs = toReqs.filter((r) => r.respondedAt);
-        const avgResponse = respondedReqs.length
-          ? respondedReqs.reduce((sum, r) => sum + (new Date(r.respondedAt) - new Date(r.date)), 0) / respondedReqs.length
-          : null;
-        const ignored = toReqs.filter((r) => r.status === "Ignored").length;
-        const completed = toReqs.filter((r) => r.status === "Approved").length;
-        return {
-          userId: u.id,
-          name: u.name,
-          role: u.role,
-          avgResponseMs: avgResponse,
-          ignored,
-          completed,
-          total: toReqs.length,
-        };
-      });
-      return metrics.sort((a, b) => (b.completed || 0) - (a.completed || 0));
-    }
-  };
+  async fetchActivityMetrics() {
+    const usersSnap = await db.collection("users").get();
+    const reqsSnap = await db.collection("requests").get();
+    const users = usersSnap.docs.map(d => d.data());
+    const reqs = reqsSnap.docs.map(d => d.data());
+    const metrics = users.map(u => {
+      const toReqs = reqs.filter(r => r.toId === u.id);
+      const respondedReqs = toReqs.filter(r => r.respondedAt);
+      const avgResponse = respondedReqs.length
+        ? respondedReqs.reduce((sum, r) => sum + (new Date(r.respondedAt) - new Date(r.date)), 0) / respondedReqs.length
+        : null;
+      const ignored = toReqs.filter(r => r.status === "Ignored").length;
+      const completed = toReqs.filter(r => r.status === "Approved").length;
+      return {
+        userId: u.id,
+        name: u.name,
+        role: u.role,
+        avgResponseMs: avgResponse,
+        ignored,
+        completed,
+        total: toReqs.length,
+      };
+    });
+    return metrics.sort((a, b) => (b.completed || 0) - (a.completed || 0));
+  }
+};
+
 
 
   /* -------------------------
