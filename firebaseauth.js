@@ -63,3 +63,5 @@ if (btn) {
 } else {
   console.error("Signup button not found (id=signupBtn)");
 }
+
+export { app, auth, db };
