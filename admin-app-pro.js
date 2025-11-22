@@ -54,9 +54,6 @@
   const fmtDate = (d) =>
     d ? new Date(d).toLocaleString() : "";
 
-import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-
-const db = getFirestore(app); // 'app' comes from firebaseauth.js
 
 
    
