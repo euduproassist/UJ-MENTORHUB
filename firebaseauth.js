@@ -51,3 +51,12 @@ function signupUser(email, password, fullName, role, department) {
     });
 }
 
+document.getElementById("signupBtn").addEventListener("click", () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const fullName = document.getElementById("fullName").value;
+  const role = document.getElementById("role").value;
+  const department = document.getElementById("department").value;
+
+  signupUser(email, password, fullName, role, department);
+});
