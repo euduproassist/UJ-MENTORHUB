@@ -54,89 +54,63 @@
   const detectUni = () => "uj";
 
 
- /* ------------------------------------------------------------
-     2.  MOCK BACKEND  (Local Only)
-     - Register/login students
-     - Search tutors/counsellors (reads from stored 'tutors')
-     - Create requests, fetch student requests
-     - Notifications, ratings, history
-  ------------------------------------------------------------ */
-  const mockAPI = {
-    async registerStudent(profile) {
-      await delay(150);
-      const students = load("students", {});
-      profile.id = profile.id || uid("student-");
-      students[profile.id] = profile;
-      save("students", students);
-      return { ok: true, student: profile };
-    },
+ import { getFirestore, collection, getDocs, doc, setDoc, addDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+const db = getFirestore(app);
 
-    async loginStudent({ email, studentNumber, password }) {
-      await delay(150);
-      const students = Object.values(load("students", {}));
-      const found = students.find(
-        (s) => s.email === email || s.studentNumber === studentNumber
-      );
-      if (found && (!password || password === found.password)) return { ok: true, student: found };
-      return { ok: false, error: "Invalid credentials" };
-    },
+const mockAPI = {
+  async registerStudent(profile) {
+    profile.id = profile.id || uid("student-");
+    const ref = doc(db, "users", profile.id);
+    await setDoc(ref, { ...profile, role: "student", createdAt: new Date().toISOString() });
+    return { ok: true, student: profile };
+  },
 
-    async searchHelpers({ role = "tutor", query = "", module = "", type = "" } = {}) {
-      await delay(120);
-      // tutors/counsellors are stored under 'tutors' for compatibility with existing data
-      const all = Object.values(load("tutors", {}));
-      return all.filter((t) => {
-        if (role && t.role && t.role !== role && !(role === "tutor" && !t.role)) return false;
-        if (query && !t.name.toLowerCase().includes(query.toLowerCase())) return false;
-        if (module && !(t.modules || "").toLowerCase().includes(module.toLowerCase())) return false;
-        if (type && t.type && t.type !== type) return false; // counsellor types
-        return true;
-      });
-    },
+  async loginStudent({ email, studentNumber }) {
+    const q = query(collection(db, "users"), where("email", "==", email));
+    const snap = await getDocs(q);
+    if (!snap.empty) return { ok: true, student: snap.docs[0].data() };
+    return { ok: false, error: "Invalid credentials" };
+  },
 
-    async sendRequest(request) {
-      await delay(120);
-      const reqs = load("requests", []);
-      request.id = request.id || uid("req-");
-      request.status = "Pending";
-      request.createdAt = new Date().toISOString();
-      reqs.push(request);
-      save("requests", reqs);
-      // add notification to tutor (mock)
-      const notes = load("notifications", []);
-      notes.push({ id: uid("n-"), to: request.tutorId, message: `New request from ${request.studentName}`, date: new Date().toISOString(), read: false });
-      save("notifications", notes);
-      return { ok: true, request };
-    },
+  async searchHelpers({ role = "tutor", query: qstr = "", module = "", type = "" } = {}) {
+    const snap = await getDocs(collection(db, "users"));
+    let list = snap.docs.map(d => d.data()).filter(u => u.role === role);
+    if (qstr) list = list.filter(u => u.name.toLowerCase().includes(qstr.toLowerCase()));
+    if (module) list = list.filter(u => (u.modules||"").toLowerCase().includes(module.toLowerCase()));
+    if (type) list = list.filter(u => u.type === type);
+    return list;
+  },
 
-    async fetchStudentRequests(studentId) {
-      await delay(120);
-      const reqs = load("requests", []);
-      return reqs.filter((r) => r.studentId === studentId).sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
-    },
+  async sendRequest(request) {
+    request.status = "Pending";
+    request.createdAt = new Date().toISOString();
+    const ref = await addDoc(collection(db, "requests"), request);
+    return { ok: true, request: { ...request, id: ref.id } };
+  },
 
-    async fetchNotificationsForStudent(studentId) {
-      await delay(80);
-      const notes = load("notifications", []);
-      // notifications saved both for tutors and students; messages that mention the student are for them
-      return notes.filter((n) => n.to === studentId || n.forStudent === studentId);
-    },
+  async fetchStudentRequests(studentId) {
+    const q = query(collection(db, "requests"), where("studentId", "==", studentId), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ ...d.data(), id: d.id }));
+  },
 
-    async submitRating(data) {
-      await delay(80);
-      const ratings = load("ratings", []);
-      ratings.push(data);
-      save("ratings", ratings);
-      return { ok: true };
-    },
+  async fetchNotificationsForStudent(studentId) {
+    const snap = await getDocs(collection(db, "notifications"));
+    return snap.docs.map(d => d.data()).filter(n => n.to === studentId || n.forStudent === studentId);
+  },
 
-    async fetchHistory(studentId) {
-      await delay(80);
-      const reqs = load("requests", []);
-      const reports = load("reports", []);
-      return { requests: reqs.filter((r) => r.studentId === studentId), reports: reports.filter((r) => r.studentId === studentId) };
-    },
-  };
+  async submitRating(data) {
+    await addDoc(collection(db, "ratings"), { ...data, date: new Date().toISOString() });
+    return { ok: true };
+  },
+
+  async fetchHistory(studentId) {
+    const reqSnap = await getDocs(query(collection(db, "requests"), where("studentId", "==", studentId)));
+    const repSnap = await getDocs(query(collection(db, "reports"), where("studentId", "==", studentId)));
+    return { requests: reqSnap.docs.map(d => d.data()), reports: repSnap.docs.map(d => d.data()) };
+  }
+};
+
 
 
    
