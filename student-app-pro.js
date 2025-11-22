@@ -54,8 +54,6 @@
   const detectUni = () => "uj";
 
 
-import { app, db } from './firebaseauth.js';
-import { getFirestore, collection, getDocs, doc, setDoc, addDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
 const mockAPI = {
   async registerStudent(profile) {
