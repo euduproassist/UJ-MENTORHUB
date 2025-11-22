@@ -18,3 +18,36 @@
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
+
+function signupUser(email, password, fullName, role, department) {
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(async (userCredential) => {
+      const user = userCredential.user;
+
+      // Save user info in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: email,
+        fullName: fullName,
+        role: role,
+        createdAt: serverTimestamp(),
+        department: department || "",
+        profilePicture: ""
+      });
+
+      alert("Signup successful!");
+      if (role === "student") {
+        window.location.href = "uj-student.html";
+      } else if (role === "tutor") {
+        window.location.href = "uj-tutor.html";
+      } else if (role === "counsellor") {
+        window.location.href = "uj-counsellor.html";
+      } else if (role === "admin") {
+        window.location.href = "uj-admin.html";
+      }
+    })
+    .catch((error) => {
+      alert(error.message);
+    });
+}
+
