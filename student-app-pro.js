@@ -8,7 +8,7 @@
    UJ ONLY VERSION (WITS + UP REMOVED)
    ============================================================ */
 
-const API_BASE = "http://127.0.0.1:5001/eduproassistprj/us-central1";
+
 
 
 (function () {
