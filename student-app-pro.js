@@ -516,3 +516,33 @@ const API_BASE = "http://127.0.0.1:5001/eduproassistprj/us-central1";
 
   document.addEventListener('DOMContentLoaded', init);
 })();
+async function testCreateSession() {
+  const user = firebase.auth().currentUser;
+  if (!user) {
+    alert("You must be logged in.");
+    return;
+  }
+
+  const idToken = await user.getIdToken();
+
+  const payload = {
+    title: "Backend Test",
+    description: "Testing Cloud Functions",
+    subjectTags: ["Test"],
+    scheduledAt: null
+  };
+
+  const response = await fetch(`${API_BASE}/createSession`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${idToken}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json();
+  console.log("Backend replied:", data);
+
+  alert("Session created: " + JSON.stringify(data));
+}
