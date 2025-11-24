@@ -57,6 +57,19 @@
     d ? new Date(d).toLocaleString() : "";
 
 
+const reportsDiv = document.getElementById("reportsDiv");
+
+db.collection("reports")
+  .orderBy("createdAt", "desc")
+  .onSnapshot(snapshot => {
+    reportsDiv.innerHTML = "";
+    snapshot.forEach(doc => {
+      const r = doc.data();
+      const div = document.createElement("div");
+      div.textContent = `From: ${r.fromUserId} - ${r.message}`;
+      reportsDiv.appendChild(div);
+    });
+  });
 
    
  /* -------------------------
