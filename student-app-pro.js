@@ -57,6 +57,22 @@ const API_BASE = "http://127.0.0.1:5001/eduproassistprj/us-central1";
   ------------------------------------------------------------ */
   const detectUni = () => "uj";
 
+const toUserSelect = document.getElementById("toUser");
+
+async function loadTutorsCounsellors() {
+  const snapshot = await db.collection("users")
+    .where("role", "in", ["tutor", "counsellor"])
+    .get();
+  snapshot.forEach(doc => {
+    const user = doc.data();
+    const option = document.createElement("option");
+    option.value = doc.id;
+    option.textContent = `${user.fullName} (${user.role})`;
+    toUserSelect.appendChild(option);
+  });
+}
+
+loadTutorsCounsellors();
 
 
  /* ------------------------------------------------------------
