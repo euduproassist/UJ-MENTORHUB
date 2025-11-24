@@ -71,6 +71,25 @@ db.collection("reports")
     });
   });
 
+   const userListDiv = document.getElementById("userList");
+
+db.collection("users").get().then(snapshot => {
+  snapshot.forEach(doc => {
+    const user = doc.data();
+    const div = document.createElement("div");
+    div.innerHTML = `
+      ${user.fullName} (${user.role}) 
+      <button onclick="deleteUser('${doc.id}')">Delete</button>
+    `;
+    userListDiv.appendChild(div);
+  });
+});
+
+async function deleteUser(uid) {
+  await db.collection("users").doc(uid).delete();
+  alert("User deleted");
+}
+
    
  /* -------------------------
      Mock Data Seeding
