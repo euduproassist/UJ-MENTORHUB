@@ -11,7 +11,7 @@
     - Mock backend using localStorage (pre-seeds sample data if none)
    ============================================================ */
 
-const API_BASE = "http://127.0.0.1:5001/eduproassistprj/us-central1";
+
 
 
 (function () {
