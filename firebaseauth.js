@@ -1,7 +1,9 @@
-// firebaseauth.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-import { getFirestore, setDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+// REMOVE import statements
+// Add this instead at the top:
+const app = firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();  // ✅ Use this instead of getAuth()
+const db = firebase.firestore(); // ✅ Use this instead of getFirestore()
+
 
 // Firebase configuration
 const firebaseConfig = {
