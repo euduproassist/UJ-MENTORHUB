@@ -17,25 +17,45 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Login function
+// LOGIN FUNCTION
 async function loginUser(email, password) {
   try {
+    // Trim input values to avoid errors
+    email = email.trim();
+    password = password.trim();
+
+    // Sign in with Firebase Auth
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
+    // Get user document from Firestore
     const docRef = doc(db, "users", user.uid);
     const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-      const userData = docSnap.data();
-      const role = userData.role;
+    if (!docSnap.exists()) {
+      alert("User data not found in database. Contact admin.");
+      return; // Stop execution
+    }
 
-      if (role === "student") window.location.href = "uj-student.html";
-      else if (role === "tutor") window.location.href = "uj-tutor.html";
-      else if (role === "counsellor") window.location.href = "uj-counsellor.html";
-      else if (role === "admin") window.location.href = "uj-admin.html";
-    } else {
-      alert("User data not found. Contact admin.");
+    const userData = docSnap.data();
+    const role = userData.role;
+
+    // Redirect based on role
+    switch (role) {
+      case "student":
+        window.location.href = "uj-student.html";
+        break;
+      case "tutor":
+        window.location.href = "uj-tutor.html";
+        break;
+      case "counsellor":
+        window.location.href = "uj-counsellor.html";
+        break;
+      case "admin":
+        window.location.href = "uj-admin.html";
+        break;
+      default:
+        alert("Invalid user role. Contact admin.");
     }
 
   } catch (error) {
@@ -44,7 +64,7 @@ async function loginUser(email, password) {
   }
 }
 
-// Connect login button
+// CONNECT LOGIN BUTTON
 const loginBtn = document.getElementById("loginBtn");
 if (loginBtn) {
   loginBtn.addEventListener("click", (e) => {
@@ -56,3 +76,4 @@ if (loginBtn) {
 } else {
   console.error("Login button not found (id=loginBtn)");
 }
+
