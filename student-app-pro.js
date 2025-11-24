@@ -74,6 +74,26 @@ async function loadTutorsCounsellors() {
 
 loadTutorsCounsellors();
 
+   const requestForm = document.getElementById("requestForm");
+const requestFeedback = document.getElementById("requestFeedback");
+
+requestForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const toUserId = toUserSelect.value;
+  const message = document.getElementById("requestMessage").value;
+
+  await db.collection("requests").add({
+    fromUserId: auth.currentUser.uid,
+    toUserId: toUserId,
+    message: message,
+    status: "pending",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  requestFeedback.textContent = "Request sent!";
+  requestForm.reset();
+});
+
 
  /* ------------------------------------------------------------
      2.  MOCK BACKEND  (Local Only)
