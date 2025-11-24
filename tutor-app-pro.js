@@ -4,6 +4,8 @@
    Version: 1.0 (Hybrid AI–Material Design)
    ============================================================ */
 
+const API_BASE = "http://127.0.0.1:5001/eduproassistprj/us-central1";
+
 
 (function () {
   "use strict";
