@@ -1,11 +1,11 @@
-// REMOVE import statements
-// Add this instead at the top:
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();  // ✅ Use this instead of getAuth()
-const db = firebase.firestore(); // ✅ Use this instead of getFirestore()
 
 
-// Firebase configuration
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyAAWp9JYQY8YThZEW-vvZ40ffIfS8w7H4w",
   authDomain: "eduproassistprj.firebaseapp.com",
@@ -17,53 +17,71 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);  // ✅ Make sure this is here
+const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Signup function
+// SIGNUP FUNCTION
 async function signupUser(email, password, fullName, role, department) {
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);  // ✅ uses 'auth'
+    email = email.trim();
+    password = password.trim();
+    fullName = fullName.trim();
+    department = department ? department.trim() : "";
+
+    // Create user in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
+    // Save user in Firestore
     await setDoc(doc(db, "users", user.uid), {
       uid: user.uid,
-      email: email,
-      fullName: fullName,
-      role: role,
-      createdAt: serverTimestamp(),
-      department: department || "",
-      profilePicture: ""
+      email,
+      fullName,
+      role,
+      department,
+      profilePicture: "",
+      createdAt: serverTimestamp()
     });
 
     alert("Signup successful!");
 
     // Redirect based on role
-    if (role === "student") window.location.href = "uj-student.html";
-    else if (role === "tutor") window.location.href = "uj-tutor.html";
-    else if (role === "counsellor") window.location.href = "uj-counsellor.html";
-    else if (role === "admin") window.location.href = "uj-admin.html";
+    switch (role) {
+      case "student":
+        window.location.href = "uj-student.html";
+        break;
+      case "tutor":
+        window.location.href = "uj-tutor.html";
+        break;
+      case "counsellor":
+        window.location.href = "uj-counsellor.html";
+        break;
+      case "admin":
+        window.location.href = "uj-admin.html";
+        break;
+      default:
+        alert("Invalid role. Contact admin.");
+    }
 
   } catch (error) {
     console.error("Signup error:", error);
-    alert("Error: " + error.message);
+    alert("Signup failed: " + error.message);
   }
 }
 
-// Attach signup button listener
-const btn = document.getElementById("signupBtn");
-if (btn) {
-  btn.addEventListener("click", (e) => {
-    e.preventDefault();  // Prevent default form submit
+// CONNECT SIGNUP BUTTON
+const signupBtn = document.getElementById("signupBtn");
+if (signupBtn) {
+  signupBtn.addEventListener("click", (e) => {
+    e.preventDefault();
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
     const fullName = document.getElementById("fullName").value;
     const role = document.getElementById("role").value;
     const department = document.getElementById("department").value;
+
     signupUser(email, password, fullName, role, department);
   });
 } else {
   console.error("Signup button not found (id=signupBtn)");
 }
-
-
