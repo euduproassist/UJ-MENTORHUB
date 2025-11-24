@@ -546,3 +546,5 @@ async function testCreateSession() {
 
   alert("Session created: " + JSON.stringify(data));
 }
+window.testCreateSession = testCreateSession;
+
