@@ -79,6 +79,24 @@ async function rejectRequest(requestId) {
   await db.collection("requests").doc(requestId).update({ status: "rejected" });
 }
 
+   const reportForm = document.getElementById("reportForm");
+const reportFeedback = document.getElementById("reportFeedback");
+
+reportForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const message = document.getElementById("reportMessage").value;
+
+  await db.collection("reports").add({
+    fromUserId: auth.currentUser.uid,
+    message: message,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  reportFeedback.textContent = "Report sent to Admin!";
+  reportForm.reset();
+});
+
+
   /* ------------------------------------------------------------
      FORCE UJ ONLY (REMOVED WITS + UP)
   ------------------------------------------------------------ */
