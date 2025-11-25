@@ -57,38 +57,7 @@
     d ? new Date(d).toLocaleString() : "";
 
 
-const reportsDiv = document.getElementById("reportsDiv");
 
-db.collection("reports")
-  .orderBy("createdAt", "desc")
-  .onSnapshot(snapshot => {
-    reportsDiv.innerHTML = "";
-    snapshot.forEach(doc => {
-      const r = doc.data();
-      const div = document.createElement("div");
-      div.textContent = `From: ${r.fromUserId} - ${r.message}`;
-      reportsDiv.appendChild(div);
-    });
-  });
-
-   const userListDiv = document.getElementById("userList");
-
-db.collection("users").get().then(snapshot => {
-  snapshot.forEach(doc => {
-    const user = doc.data();
-    const div = document.createElement("div");
-    div.innerHTML = `
-      ${user.fullName} (${user.role}) 
-      <button onclick="deleteUser('${doc.id}')">Delete</button>
-    `;
-    userListDiv.appendChild(div);
-  });
-});
-
-async function deleteUser(uid) {
-  await db.collection("users").doc(uid).delete();
-  alert("User deleted");
-}
 
    
  /* -------------------------
