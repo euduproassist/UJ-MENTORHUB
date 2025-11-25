@@ -57,42 +57,8 @@ const API_BASE = "http://127.0.0.1:5001/eduproassistprj/us-central1";
   ------------------------------------------------------------ */
   const detectUni = () => "uj";
 
-const toUserSelect = document.getElementById("toUser");
 
-async function loadTutorsCounsellors() {
-  const snapshot = await db.collection("users")
-    .where("role", "in", ["tutor", "counsellor"])
-    .get();
-  snapshot.forEach(doc => {
-    const user = doc.data();
-    const option = document.createElement("option");
-    option.value = doc.id;
-    option.textContent = `${user.fullName} (${user.role})`;
-    toUserSelect.appendChild(option);
-  });
-}
 
-loadTutorsCounsellors();
-
-   const requestForm = document.getElementById("requestForm");
-const requestFeedback = document.getElementById("requestFeedback");
-
-requestForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const toUserId = toUserSelect.value;
-  const message = document.getElementById("requestMessage").value;
-
-  await db.collection("requests").add({
-    fromUserId: auth.currentUser.uid,
-    toUserId: toUserId,
-    message: message,
-    status: "pending",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-
-  requestFeedback.textContent = "Request sent!";
-  requestForm.reset();
-});
 
 const reportForm = document.getElementById("reportForm");
 const reportFeedback = document.getElementById("reportFeedback");
