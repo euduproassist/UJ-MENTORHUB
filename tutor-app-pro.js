@@ -51,50 +51,8 @@
   const fmtDate = (d) => new Date(d).toLocaleString();
 
 
-   const incomingRequestsDiv = document.getElementById("incomingRequests");
+ 
 
-db.collection("requests")
-  .where("toUserId", "==", auth.currentUser.uid)
-  .where("status", "==", "pending")
-  .onSnapshot(snapshot => {
-    incomingRequestsDiv.innerHTML = "";
-    snapshot.forEach(doc => {
-      const req = doc.data();
-      const div = document.createElement("div");
-      div.innerHTML = `
-        From: ${req.fromUserId} <br>
-        Message: ${req.message} <br>
-        <button onclick="acceptRequest('${doc.id}')">Accept</button>
-        <button onclick="rejectRequest('${doc.id}')">Reject</button>
-      `;
-      incomingRequestsDiv.appendChild(div);
-    });
-  });
-
-async function acceptRequest(requestId) {
-  await db.collection("requests").doc(requestId).update({ status: "accepted" });
-}
-
-async function rejectRequest(requestId) {
-  await db.collection("requests").doc(requestId).update({ status: "rejected" });
-}
-
-   const reportForm = document.getElementById("reportForm");
-const reportFeedback = document.getElementById("reportFeedback");
-
-reportForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const message = document.getElementById("reportMessage").value;
-
-  await db.collection("reports").add({
-    fromUserId: auth.currentUser.uid,
-    message: message,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-
-  reportFeedback.textContent = "Report sent to Admin!";
-  reportForm.reset();
-});
 
 
   /* ------------------------------------------------------------
